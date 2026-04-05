@@ -23,6 +23,8 @@ from engine.signal_engine import signal_engine
 from engine.risk_manager import risk_manager
 from engine.auto_trader import auto_trader
 from broker.paper_broker import paper_broker
+from broker.kite_broker import kite_broker
+from broker.upstox_broker import upstox_broker
 from backtest.runner import run_backtest
 
 logging.basicConfig(
@@ -92,10 +94,15 @@ app.add_middleware(
 
 # ─── Pydantic Models ──────────────────────────────────────────────────────────
 
+# Active broker mode: paper | kite | upstox
+active_broker_mode: str = "paper"
+
 class OrderRequest(BaseModel):
     symbol: str
     direction: str   # BUY | SELL
     quantity: int
+    order_type: Optional[str] = "MARKET"
+    price: Optional[float] = 0.0
     notes: Optional[str] = ""
 
 class BacktestRequest(BaseModel):
@@ -107,6 +114,16 @@ class BacktestRequest(BaseModel):
 
 class WatchlistUpdate(BaseModel):
     symbols: list[str]
+
+class BrokerSwitchRequest(BaseModel):
+    mode: str  # paper | kite | upstox
+
+class BrokerConfigRequest(BaseModel):
+    broker: str  # kite | upstox
+    api_key: str
+    api_secret: str
+    access_token: Optional[str] = None
+    redirect_uri: Optional[str] = None
 
 
 # ─── Health ───────────────────────────────────────────────────────────────────
@@ -247,24 +264,141 @@ async def get_orders(limit: int = 50):
 
 @app.post("/orders")
 async def place_order(req: OrderRequest):
+    global active_broker_mode
     price = market_data.get_latest_price(req.symbol)
     if not price:
         raise HTTPException(status_code=400, detail=f"Could not fetch price for {req.symbol}")
 
-    order = paper_broker.place_order(
-        symbol=req.symbol,
-        direction=req.direction.upper(),
-        quantity=req.quantity,
-        current_price=price,
-        notes=req.notes or ""
-    )
+    if active_broker_mode == "kite":
+        if not kite_broker.is_connected():
+            raise HTTPException(status_code=400, detail="Kite broker not connected")
+        result = kite_broker.place_order(
+            symbol=req.symbol,
+            direction=req.direction.upper(),
+            quantity=req.quantity,
+            order_type=req.order_type or "MARKET",
+            price=req.price or 0.0,
+            notes=req.notes or ""
+        )
+        if "error" in result:
+            raise HTTPException(status_code=400, detail=result["error"])
+        return result
+    elif active_broker_mode == "upstox":
+        if not upstox_broker.is_connected():
+            raise HTTPException(status_code=400, detail="Upstox broker not connected")
+        result = upstox_broker.place_order(
+            symbol=req.symbol,
+            direction=req.direction.upper(),
+            quantity=req.quantity,
+            order_type=req.order_type or "MARKET",
+            price=req.price or 0.0,
+            notes=req.notes or ""
+        )
+        if "error" in result:
+            raise HTTPException(status_code=400, detail=result["error"])
+        return result
+    else:
+        # Default: paper trading
+        order = paper_broker.place_order(
+            symbol=req.symbol,
+            direction=req.direction.upper(),
+            quantity=req.quantity,
+            current_price=price,
+            notes=req.notes or ""
+        )
+        return {
+            "order_id":    order.order_id,
+            "status":      order.status,
+            "filled_price":order.filled_price,
+            "brokerage":   order.brokerage,
+            "notes":       order.notes,
+            "mode":        "paper",
+        }
+
+
+# ─── Broker Mode ──────────────────────────────────────────────────────────────
+
+@app.get("/broker/status")
+async def broker_status():
+    global active_broker_mode
+    if active_broker_mode == "kite":
+        connected = kite_broker.is_connected()
+        profile = kite_broker.get_profile() if connected else {}
+    elif active_broker_mode == "upstox":
+        connected = upstox_broker.is_connected()
+        profile = upstox_broker.get_profile() if connected else {}
+    else:
+        connected = True
+        profile = {"name": "Paper Trader", "capital": paper_broker._cash}
     return {
-        "order_id":    order.order_id,
-        "status":      order.status,
-        "filled_price":order.filled_price,
-        "brokerage":   order.brokerage,
-        "notes":       order.notes,
+        "mode": active_broker_mode,
+        "connected": connected,
+        "profile": profile,
+        "available_modes": ["paper", "kite", "upstox"]
     }
+
+@app.post("/broker/switch")
+async def switch_broker(req: BrokerSwitchRequest):
+    global active_broker_mode
+    if req.mode not in ["paper", "kite", "upstox"]:
+        raise HTTPException(status_code=400, detail="Invalid broker mode")
+    active_broker_mode = req.mode
+    return {"mode": active_broker_mode, "status": "switched"}
+
+@app.post("/broker/configure")
+async def configure_broker(req: BrokerConfigRequest):
+    global active_broker_mode
+    if req.broker == "kite":
+        kite_broker.api_key = req.api_key
+        kite_broker.api_secret = req.api_secret
+        if req.access_token:
+            kite_broker.connect(req.access_token)
+        login_url = ""
+        try:
+            login_url = kite_broker.get_login_url()
+        except Exception:
+            pass
+        return {
+            "broker": "kite",
+            "configured": True,
+            "connected": kite_broker.is_connected(),
+            "login_url": login_url
+        }
+    elif req.broker == "upstox":
+        upstox_broker.api_key = req.api_key
+        upstox_broker.api_secret = req.api_secret
+        if req.redirect_uri:
+            upstox_broker.redirect_uri = req.redirect_uri
+        if req.access_token:
+            upstox_broker.connect(req.access_token)
+        login_url = ""
+        try:
+            login_url = upstox_broker.get_login_url()
+        except Exception:
+            pass
+        return {
+            "broker": "upstox",
+            "configured": True,
+            "connected": upstox_broker.is_connected(),
+            "login_url": login_url
+        }
+    raise HTTPException(status_code=400, detail="Unknown broker")
+
+@app.get("/broker/kite/login-url")
+async def kite_login_url():
+    try:
+        url = kite_broker.get_login_url()
+        return {"login_url": url}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/broker/upstox/login-url")
+async def upstox_login_url():
+    try:
+        url = upstox_broker.get_login_url()
+        return {"login_url": url}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 # ─── Backtesting ──────────────────────────────────────────────────────────────
