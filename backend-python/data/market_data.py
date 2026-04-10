@@ -60,6 +60,17 @@ class MarketDataService:
             logger.error(f"Error fetching data for {symbol}: {e}")
             return pd.DataFrame()
 
+    def get_pe_ratio(self, symbol: str) -> float:
+        """Fetch the trailing P/E ratio using yfinance."""
+        try:
+            sym = self._normalize_symbol(symbol)
+            ticker = yf.Ticker(sym)
+            pe = ticker.info.get("trailingPE", 0.0)
+            return float(pe) if pe is not None else 0.0
+        except Exception as e:
+            logger.debug(f"Could not fetch P/E for {symbol}: {e}")
+            return 0.0
+
     def get_latest_price(self, symbol: str) -> Optional[float]:
         """Get the most recent closing price."""
         df = self.get_ohlcv(symbol, period="5d", force_refresh=True)

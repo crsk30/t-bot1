@@ -68,6 +68,7 @@ import { Subscription } from 'rxjs';
                 <th>Stop Loss</th>
                 <th>Target</th>
                 <th>R:R</th>
+                <th>P/E</th>
                 <th>Strength</th>
                 <th>Reasoning</th>
                 <th>Time</th>
@@ -90,6 +91,9 @@ import { Subscription } from 'rxjs';
                   <span [class]="s.risk_reward >= 2 ? 'text-bull' : s.risk_reward >= 1.5 ? 'text-neutral' : 'text-bear'">
                     {{ s.risk_reward }}:1
                   </span>
+                </td>
+                <td class="text-mono text-muted">
+                  {{ (s.pe_ratio || 0) > 0 ? (s.pe_ratio | number:'1.1-1') : 'N/A' }}
                 </td>
                 <td style="min-width:100px;">
                   <div class="flex items-center gap-2">

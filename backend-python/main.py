@@ -67,7 +67,10 @@ async def lifespan(app: FastAPI):
                 await auto_trader.act_on_signal(sig)
 
     signal_engine._broadcast = signal_and_trade
-
+    global engine_task
+    engine_task = asyncio.create_task(signal_engine.run_continuous())
+    logger.info("Signal engine started — scanning markets continuously")
+    
     await auto_trader.start()
     logger.info("AutoTrader activated — paper trading autonomously")
     yield
@@ -110,7 +113,7 @@ class BacktestRequest(BaseModel):
     strategy: str
     start_date: str  # YYYY-MM-DD
     end_date: str
-    cash: float = 500000
+    cash: float = 200000
 
 class WatchlistUpdate(BaseModel):
     symbols: list[str]

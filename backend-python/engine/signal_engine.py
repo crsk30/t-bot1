@@ -85,6 +85,7 @@ class SignalEngine:
                             "stop_loss":  signal.stop_loss,
                             "target":     signal.target,
                             "risk_reward":signal.risk_reward,
+                            "pe_ratio":   market_data.get_pe_ratio(symbol),
                             "reasoning":  signal.reasoning,
                             "indicators": signal.indicators,
                             "timestamp":  datetime.utcnow().isoformat(),

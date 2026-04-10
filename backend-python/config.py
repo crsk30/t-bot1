@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     angel_totp_secret: str = ""
 
     # Paper trading
-    paper_capital: float = 500000.0  # ₹5 Lakhs default
+    paper_capital: float = 200000.0  # ₹2 Lakhs default
     paper_brokerage_pct: float = 0.0003  # 0.03% per leg
 
     # Risk management

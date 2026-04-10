@@ -13,6 +13,7 @@ export interface Signal {
   stop_loss: number;
   target: number;
   risk_reward: number;
+  pe_ratio?: number;
   reasoning: string;
   indicators: Record<string, number | boolean>;
   timestamp: string;
