@@ -13,6 +13,7 @@ const http = require("http");
 const WebSocket = require("ws");
 const axios = require("axios");
 const ollamaService = require("./ollama.service");
+const emailScheduler = require("./email-scheduler");
 
 const app = express();
 const server = http.createServer(app);
@@ -293,6 +294,9 @@ server.listen(PORT, () => {
 ║   WebSocket: ws://localhost:${PORT}/ws              ║
 ╚════════════════════════════════════════════════════╝
   `);
+
+  // Start daily thought-journal email scheduler (3:28 PM IST, weekdays)
+  emailScheduler.startScheduler();
 });
 
 module.exports = { app, server };
