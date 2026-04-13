@@ -88,7 +88,7 @@ class EMACrossoverRSI(BaseStrategy):
 
         if above_trend and ema_aligned and rsi_in_zone and macd_cross_up and trend_strong:
             stop_loss = round(close - self.atr_sl_mult * atr, 2)
-            target    = round(close + self.atr_tp_mult * atr, 2)
+            target    = round(close * 1.03, 2) # Strict 3% profit target
             strength  = self._calc_strength(rsi, adx, above_trend, ema_aligned)
 
             reasoning = (
@@ -112,7 +112,7 @@ class EMACrossoverRSI(BaseStrategy):
 
         if rsi_overbought or macd_cross_down or below_ema20:
             stop_loss = round(close + self.atr_sl_mult * atr, 2)
-            target    = round(close - self.atr_tp_mult * atr, 2)
+            target    = round(close * 0.97, 2) # Strict 3% shorting profit
             strength  = min(100, (rsi - 50) * 2) if rsi_overbought else 60
 
             reasons = []

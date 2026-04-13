@@ -99,7 +99,7 @@ class BollingerSqueeze(BaseStrategy):
 
         if was_in_squeeze and breakout_now and volume_confirms and rsi_supports and above_ema50:
             band_range = bb_upper - bb_lower
-            target     = round(bb_upper + band_range, 2)
+            target     = round(close * 1.03, 2) # Strict 3% profit target
             stop_loss  = round(close - self.atr_sl_mult * atr, 2)
             strength   = self._calc_strength(vol_ratio, rsi, squeeze_threshold, bb_width)
 
@@ -175,7 +175,7 @@ class VWAPDeviation(BaseStrategy):
 
         if significantly_below and oversold_rsi and rsi_exhausted and above_200:
             stop_loss = round(close - self.atr_sl_mult * atr, 2)
-            target    = round(vwap, 2)
+            target    = round(close * 1.03, 2) # Strict 3% profit target
             strength  = self._calc_strength(deviation, atr, rsi)
 
             reasoning = (

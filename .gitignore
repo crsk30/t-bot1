@@ -1,3 +1,38 @@
-frontend/node_modules
-backend-node/node_modules
-# backend-node/.env.example
+# Node/Javascript
+node_modules/
+dist/
+build/
+npm-debug.log
+.angular/
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+backend-node/.env
+backend-python/.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+backend-python/venv/
+backend-python/algo_trading.db
+backend-python/algo_trading_prod.db
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+
+# PM2 Logs
+logs/
+*.log

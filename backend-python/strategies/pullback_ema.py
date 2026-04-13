@@ -99,7 +99,7 @@ class PullbackToEMA(BaseStrategy):
         if price_touched_ema and rsi_valid and is_bullish_close:
             strength = self._calc_strength(rsi, ema_aligned, vol_declining, touch_zone_low, low, ema20)
             stop_loss = round(min(recent_low - 0.5 * atr, close - self.atr_sl_mult * atr), 2)
-            target    = round(close + self.atr_tp_mult * atr, 2)
+            target    = round(close * 1.03, 2) # Strict 3% profit target
 
             reasoning = (
                 f"Price pulled back to 20-EMA (${ema20:.2f}), touching at ${low:.2f}. "
