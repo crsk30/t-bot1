@@ -113,7 +113,7 @@ class BacktestRequest(BaseModel):
     strategy: str
     start_date: str  # YYYY-MM-DD
     end_date: str
-    cash: float = 500000
+    cash: float = 200000
 
 class WatchlistUpdate(BaseModel):
     symbols: list[str]

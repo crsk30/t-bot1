@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     paper_brokerage_pct: float = 0.0003  # 0.03% per leg
 
     # Risk management
-    max_position_pct: float = 0.05       # 5% of capital per trade
+    max_position_pct: float = 0.03       # 3% of capital per trade
     max_portfolio_risk_pct: float = 0.20  # 20% max deployed
     atr_stop_multiplier: float = 2.0
     min_risk_reward: float = 2.0
