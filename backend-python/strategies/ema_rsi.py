@@ -105,28 +105,6 @@ class EMACrossoverRSI(BaseStrategy):
                 reasoning=reasoning, indicators=indicators
             )
 
-        # ─── SELL / Exit Signal ───────────────────────────────────────────────
-        rsi_overbought   = rsi >= self.rsi_overbought
-        macd_cross_down  = (macd < macd_sig) and (prev_macd >= prev_msig)
-        below_ema20      = close < ema20
-
-        if rsi_overbought or macd_cross_down or below_ema20:
-            stop_loss = round(close + self.atr_sl_mult * atr, 2)
-            target    = round(close * 0.97, 2) # Strict 3% shorting profit
-            strength  = min(100, (rsi - 50) * 2) if rsi_overbought else 60
-
-            reasons = []
-            if rsi_overbought:    reasons.append(f"RSI={rsi:.1f} (overbought)")
-            if macd_cross_down:   reasons.append("MACD crossed DOWN")
-            if below_ema20:       reasons.append(f"Price below 20-EMA (${ema20:.2f})")
-
-            return SignalResult(
-                symbol=symbol, strategy=self.name,
-                signal="SELL", strength=strength, price=close,
-                stop_loss=stop_loss, target=target,
-                reasoning=". ".join(reasons), indicators=indicators
-            )
-
         return None
 
     def _calc_strength(self, rsi: float, adx: float, above_trend: bool, ema_aligned: bool) -> float:

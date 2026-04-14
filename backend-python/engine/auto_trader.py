@@ -134,6 +134,9 @@ class AutoTrader:
         # ── Gate 2: Signal direction ──────────────────────────────────────────
         if sig_type not in ("BUY", "SELL"):
             return False, "Not an actionable signal (HOLD or unknown)"
+            
+        if sig_type == "SELL":
+            return False, "Strategy triggered a SELL (bearish) signal, but Swing Short-Selling is disabled/unsupported in the Indian Cash Market."
 
         # ── Gate 3: Minimum strength ──────────────────────────────────────────
         if strength < MIN_SIGNAL_STRENGTH:
