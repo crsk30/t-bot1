@@ -89,6 +89,7 @@ app.get("/api/signals",            (req, res) => proxyToPython(req, res, "/signa
 app.get("/api/signals/scan",       (req, res) => proxyToPython(req, res, "/signals/scan"));
 
 // ─── Market Data ─────────────────────────────────────────────────────────────
+app.get("/api/market/trend",       (req, res) => proxyToPython(req, res, "/market/trend"));
 app.get("/api/stocks/quotes",      (req, res) => proxyToPython(req, res, "/stocks/quotes/batch"));
 app.get("/api/stocks/:symbol/quote",      (req, res) => proxyToPython(req, res, `/stocks/${req.params.symbol}/quote`));
 app.get("/api/stocks/:symbol/chart",      (req, res) => proxyToPython(req, res, `/stocks/${req.params.symbol}/chart`));
