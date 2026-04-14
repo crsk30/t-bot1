@@ -76,11 +76,17 @@ class RiskManager:
         qty_by_portfolio = int(min(remaining, max_position_value) / price)
         quantity = min(qty_by_position, qty_by_portfolio)
 
+        # Graceful override: If max % config is too strict to even buy 1 share of an expensive stock 
+        # (e.g. ₹6k limit vs ₹12k Maruti), we will bend the rule and allow exactly 1 share as long 
+        # as we have enough raw cash for it.
+        if quantity == 0 and price <= remaining:
+            quantity = 1
+            
         if quantity < 1:
             return PositionSizing(
                 symbol=symbol, quantity=0, position_value=0,
                 risk_amount=0, capital_pct=0, approved=False,
-                reason="Insufficient capital for minimum 1 share"
+                reason=f"Insufficient capital for minimum 1 share (Need ₹{price:.2f}, Have ₹{remaining:.2f})"
             )
 
         position_value = round(quantity * price, 2)

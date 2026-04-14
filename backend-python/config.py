@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     max_position_pct: float = 0.03       # 3% of capital per trade
     max_portfolio_risk_pct: float = 0.20  # 20% max deployed
     atr_stop_multiplier: float = 2.0
-    min_risk_reward: float = 2.0
+    min_risk_reward: float = 0.0
 
     # Strategy engine
     scan_interval_seconds: int = 300  # Scan every 5 minutes
