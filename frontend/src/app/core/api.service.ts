@@ -107,6 +107,7 @@ export class ApiService {
   scanNow()    { return this.http.get<{signals: Signal[]}>(`${this.base}/signals/scan`); }
 
   // ── Market Data ───────────────────────────────────────────────────────
+  getMarketTrend() { return this.http.get<any>(`${this.base}/market/trend`); }
   getQuote(symbol: string) { return this.http.get<any>(`${this.base}/stocks/${symbol}/quote`); }
   getChart(symbol: string, period = '6mo', interval = '1d') {
     return this.http.get<any>(`${this.base}/stocks/${symbol}/chart?period=${period}&interval=${interval}`);

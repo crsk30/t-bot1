@@ -12,13 +12,31 @@ import { Subscription } from 'rxjs';
   template: `
     <div class="page">
       <!-- Header -->
-      <div class="page-header">
+      <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem;">
         <div>
           <h1>Dashboard</h1>
           <div class="text-muted" style="font-size:0.8rem;margin-top:0.2rem;">
             NSE Swing Trading · Paper Mode · {{ currentTime() }}
           </div>
         </div>
+
+        <!-- Market Trend Badge -->
+        <div class="card" *ngIf="marketTrend()" style="padding: 0.5rem 1rem; border: 1px solid var(--border); display: flex; gap: 1rem; align-items: center; background: var(--bg-elevated); margin-bottom: 0;">
+            <div>
+                <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Nifty 50 Trend</div>
+                <div [class]="marketTrend().trend === 'BULLISH' ? 'text-bull' : (marketTrend().trend === 'BEARISH' ? 'text-bear' : 'text-primary')" style="font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 0.3rem;">
+                    <span *ngIf="marketTrend().trend === 'BULLISH'">📈</span>
+                    <span *ngIf="marketTrend().trend === 'BEARISH'">📉</span>
+                    <span *ngIf="marketTrend().trend === 'SIDEWAYS'">⚖️</span>
+                    {{ marketTrend().trend }}
+                </div>
+            </div>
+            <div style="border-left: 1px solid var(--border); padding-left: 1rem; text-align: right;">
+                <div style="font-size: 0.9rem; font-family: var(--font-mono); font-weight: 600;">₹{{ marketTrend().close | number:'1.0-0' }}</div>
+                <div style="font-size: 0.7rem; color: var(--text-muted);">EMA: {{ marketTrend().ema20 | number:'1.0-0' }}</div>
+            </div>
+        </div>
+
         <div class="flex gap-2">
           <button class="btn btn-ghost" (click)="refreshAll()" [disabled]="loading()">
             {{ loading() ? '⏳' : '🔄' }} Refresh
@@ -200,6 +218,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   loading = signal(false);
   latestThought = signal<any>(null);
   currentTime = signal('');
+  marketTrend = signal<any>(null);
 
   portfolio = this.api.portfolio;
   totalSignals = computed(() => this.api.signals().length);
@@ -215,6 +234,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.updateClock();
     this.clockTimer = setInterval(() => this.updateClock(), 1000);
     this.loadThoughts();
+    
+    // Fetch initial trend
+    this.api.getMarketTrend().subscribe(t => this.marketTrend.set(t));
+
     this.sub = this.ws.messages$.subscribe(msg => {
       if (msg['type'] === 'trader_thought') this.latestThought.set(msg['thought']);
       if (msg['type'] === 'trade_executed' || msg['type'] === 'position_closed') {
@@ -236,6 +259,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   refreshAll() {
     this.loading.set(true);
+    this.api.getMarketTrend().subscribe(t => this.marketTrend.set(t));
     this.api.getPortfolio().subscribe(p => { this.api.portfolio.set(p); this.loading.set(false); });
     this.api.getSignals().subscribe(r => this.api.signals.set(r.signals || []));
   }

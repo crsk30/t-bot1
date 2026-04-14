@@ -211,6 +211,33 @@ async def scan_now():
 
 # ─── Market Data ──────────────────────────────────────────────────────────────
 
+@app.get("/market/trend")
+async def get_market_trend():
+    """Determine overall NSE market trend using Nifty 50 (^NSEI)"""
+    df = market_data.get_ohlcv("^NSEI", period="1y")
+    if df.empty:
+        return {"trend": "UNKNOWN", "index": "NIFTY 50", "close": 0}
+        
+    df = add_all_indicators(df)
+    close = float(df["Close"].iloc[-1])
+    ema20 = float(df["ema20"].iloc[-1])
+    ema50 = float(df["ema50"].iloc[-1])
+    
+    if close > ema20 and close > ema50:
+        trend = "BULLISH"
+    elif close < ema20 and close < ema50:
+        trend = "BEARISH"
+    else:
+        trend = "SIDEWAYS"
+        
+    return {
+        "trend": trend,
+        "index": "NIFTY 50",
+        "close": round(close, 2),
+        "ema20": round(ema20, 2),
+        "ema50": round(ema50, 2)
+    }
+
 @app.get("/stocks/{symbol}/quote")
 async def get_quote(symbol: str):
     return market_data.get_quote(symbol)
