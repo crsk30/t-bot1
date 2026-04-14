@@ -40,20 +40,15 @@ class RiskManager:
         - Risk per trade (loss if stop-loss is hit)
         - Available capital
         """
-        if price <= 0 or stop_loss <= 0 or stop_loss >= price:
+        if price <= 0 or stop_loss <= 0 or price == stop_loss:
             return PositionSizing(
                 symbol=symbol, quantity=0, position_value=0,
                 risk_amount=0, capital_pct=0, approved=False,
-                reason="Invalid price or stop-loss"
+                reason="Invalid price or stop-loss (cannot be zero or perfectly equal)"
             )
 
-        risk_per_share = price - stop_loss
-        if risk_per_share <= 0:
-            return PositionSizing(
-                symbol=symbol, quantity=0, position_value=0,
-                risk_amount=0, capital_pct=0, approved=False,
-                reason="Stop loss must be below entry price"
-            )
+        # Use absolute value so it correctly calculates risk for BOTH Buy and Short Sell trades
+        risk_per_share = abs(price - stop_loss)
 
         # Max capital to allocate per position
         max_position_value = available_capital * settings.max_position_pct
