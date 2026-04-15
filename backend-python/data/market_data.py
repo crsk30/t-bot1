@@ -136,6 +136,8 @@ class MarketDataService:
 
     @staticmethod
     def _normalize_symbol(symbol: str) -> str:
+        if symbol.startswith("^"):  # Index tickers (^NSEI, ^NSEBANK, etc.) — don't append .NS
+            return symbol
         if not symbol.endswith(".NS") and not symbol.endswith(".BO"):
             return symbol + ".NS"
         return symbol
