@@ -4,7 +4,7 @@
  * Sits between Ionic frontend and Python FastAPI engine.
  * Handles: CORS, rate limiting, auth, REST proxy, WebSocket bridge, Ollama AI.
  */
-require("dotenv").config();
+require("dotenv").config({ path: require("path").resolve(__dirname, ".env") });
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
@@ -79,44 +79,44 @@ app.get("/api/health", async (req, res) => {
 });
 
 // ─── Engine ───────────────────────────────────────────────────────────────────
-app.get("/api/engine/status",      (req, res) => proxyToPython(req, res, "/engine/status"));
-app.post("/api/engine/start",      (req, res) => proxyToPython(req, res, "/engine/start", "POST"));
-app.post("/api/engine/stop",       (req, res) => proxyToPython(req, res, "/engine/stop", "POST"));
-app.post("/api/engine/scan",       (req, res) => proxyToPython(req, res, "/engine/scan", "POST"));
+app.get("/api/engine/status", (req, res) => proxyToPython(req, res, "/engine/status"));
+app.post("/api/engine/start", (req, res) => proxyToPython(req, res, "/engine/start", "POST"));
+app.post("/api/engine/stop", (req, res) => proxyToPython(req, res, "/engine/stop", "POST"));
+app.post("/api/engine/scan", (req, res) => proxyToPython(req, res, "/engine/scan", "POST"));
 
 // ─── Signals ─────────────────────────────────────────────────────────────────
-app.get("/api/signals",            (req, res) => proxyToPython(req, res, "/signals"));
-app.get("/api/signals/scan",       (req, res) => proxyToPython(req, res, "/signals/scan"));
+app.get("/api/signals", (req, res) => proxyToPython(req, res, "/signals"));
+app.get("/api/signals/scan", (req, res) => proxyToPython(req, res, "/signals/scan"));
 
 // ─── Market Data ─────────────────────────────────────────────────────────────
-app.get("/api/market/trend",       (req, res) => proxyToPython(req, res, "/market/trend"));
-app.get("/api/stocks/quotes",      (req, res) => proxyToPython(req, res, "/stocks/quotes/batch"));
-app.get("/api/stocks/:symbol/quote",      (req, res) => proxyToPython(req, res, `/stocks/${req.params.symbol}/quote`));
-app.get("/api/stocks/:symbol/chart",      (req, res) => proxyToPython(req, res, `/stocks/${req.params.symbol}/chart`));
+app.get("/api/market/trend", (req, res) => proxyToPython(req, res, "/market/trend"));
+app.get("/api/stocks/quotes", (req, res) => proxyToPython(req, res, "/stocks/quotes/batch"));
+app.get("/api/stocks/:symbol/quote", (req, res) => proxyToPython(req, res, `/stocks/${req.params.symbol}/quote`));
+app.get("/api/stocks/:symbol/chart", (req, res) => proxyToPython(req, res, `/stocks/${req.params.symbol}/chart`));
 app.get("/api/stocks/:symbol/indicators", (req, res) => proxyToPython(req, res, `/stocks/${req.params.symbol}/indicators`));
 
 // ─── Watchlist ────────────────────────────────────────────────────────────────
-app.get("/api/watchlist",          (req, res) => proxyToPython(req, res, "/watchlist"));
-app.put("/api/watchlist",          (req, res) => proxyToPython(req, res, "/watchlist", "PUT"));
+app.get("/api/watchlist", (req, res) => proxyToPython(req, res, "/watchlist"));
+app.put("/api/watchlist", (req, res) => proxyToPython(req, res, "/watchlist", "PUT"));
 
 // ─── Portfolio ────────────────────────────────────────────────────────────────
-app.get("/api/portfolio",          (req, res) => proxyToPython(req, res, "/portfolio"));
-app.get("/api/orders",             (req, res) => proxyToPython(req, res, "/orders"));
-app.post("/api/orders",            (req, res) => proxyToPython(req, res, "/orders", "POST"));
+app.get("/api/portfolio", (req, res) => proxyToPython(req, res, "/portfolio"));
+app.get("/api/orders", (req, res) => proxyToPython(req, res, "/orders"));
+app.post("/api/orders", (req, res) => proxyToPython(req, res, "/orders", "POST"));
 
 // ─── Backtesting ──────────────────────────────────────────────────────────────
-app.post("/api/backtest",          (req, res) => proxyToPython(req, res, "/backtest", "POST"));
+app.post("/api/backtest", (req, res) => proxyToPython(req, res, "/backtest", "POST"));
 
 // ─── AutoTrader ───────────────────────────────────────────────────────────────
-app.get("/api/autotrader/status",  (req, res) => proxyToPython(req, res, "/autotrader/status"));
-app.post("/api/autotrader/start",  (req, res) => proxyToPython(req, res, "/autotrader/start", "POST"));
-app.post("/api/autotrader/stop",   (req, res) => proxyToPython(req, res, "/autotrader/stop", "POST"));
-app.get("/api/autotrader/thoughts",(req, res) => proxyToPython(req, res, "/autotrader/thoughts"));
+app.get("/api/autotrader/status", (req, res) => proxyToPython(req, res, "/autotrader/status"));
+app.post("/api/autotrader/start", (req, res) => proxyToPython(req, res, "/autotrader/start", "POST"));
+app.post("/api/autotrader/stop", (req, res) => proxyToPython(req, res, "/autotrader/stop", "POST"));
+app.get("/api/autotrader/thoughts", (req, res) => proxyToPython(req, res, "/autotrader/thoughts"));
 
 // ─── Broker Mode ─────────────────────────────────────────────────────────────
-app.get("/api/broker/status",      (req, res) => proxyToPython(req, res, "/broker/status"));
-app.post("/api/broker/switch",     (req, res) => proxyToPython(req, res, "/broker/switch", "POST"));
-app.post("/api/broker/configure",  (req, res) => proxyToPython(req, res, "/broker/configure", "POST"));
+app.get("/api/broker/status", (req, res) => proxyToPython(req, res, "/broker/status"));
+app.post("/api/broker/switch", (req, res) => proxyToPython(req, res, "/broker/switch", "POST"));
+app.post("/api/broker/configure", (req, res) => proxyToPython(req, res, "/broker/configure", "POST"));
 
 // ─── Ollama AI Routes ─────────────────────────────────────────────────────────
 
@@ -151,10 +151,10 @@ app.post("/api/ollama/analyze", async (req, res) => {
       axios.get(`${PYTHON_BASE}/signals`, { timeout: 10000 }),
     ]);
 
-    const quote      = quoteRes.status === "fulfilled" ? quoteRes.value.data : {};
+    const quote = quoteRes.status === "fulfilled" ? quoteRes.value.data : {};
     const indicators = indicatorsRes.status === "fulfilled" ? indicatorsRes.value.data?.indicators : {};
     const allSignals = signalsRes.status === "fulfilled" ? signalsRes.value.data?.signals : [];
-    const signals    = allSignals.filter((s) => s.symbol === symbol);
+    const signals = allSignals.filter((s) => s.symbol === symbol);
 
     const analysis = await ollamaService.analyzeStock(symbol, quote, indicators, signals);
     res.json(analysis);
@@ -183,10 +183,10 @@ app.post("/api/ollama/analyze/stream", async (req, res) => {
       axios.get(`${PYTHON_BASE}/signals`, { timeout: 10000 }),
     ]);
 
-    const quote      = quoteRes.status === "fulfilled" ? quoteRes.value.data : {};
+    const quote = quoteRes.status === "fulfilled" ? quoteRes.value.data : {};
     const indicators = indicatorsRes.status === "fulfilled" ? indicatorsRes.value.data?.indicators : {};
     const allSignals = signalsRes.status === "fulfilled" ? signalsRes.value.data?.signals : [];
-    const signals    = allSignals.filter((s) => s.symbol === symbol);
+    const signals = allSignals.filter((s) => s.symbol === symbol);
 
     res.write(`data: ${JSON.stringify({ type: "start", symbol })}\n\n`);
 
