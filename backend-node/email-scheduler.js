@@ -89,7 +89,7 @@ function buildHtmlEmail(thoughts, dateStr) {
           (t) => `
       <tr style="border-bottom:1px solid #374151;">
         <td style="padding:10px 12px;color:#9ca3af;font-size:12px;font-family:monospace;white-space:nowrap;">
-          ${new Date(t.timestamp).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+          ${new Date(t.timestamp).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit", timeZone: "Asia/Kolkata" })}
         </td>
         <td style="padding:10px 12px;text-align:center;font-size:16px;">
           ${t.decided ? "✅" : "❌"}
@@ -218,7 +218,7 @@ function buildTextEmail(thoughts, dateStr) {
     lines.push("No thoughts recorded for today.");
   } else {
     thoughts.forEach((t) => {
-      const time    = new Date(t.timestamp).toLocaleTimeString("en-IN");
+      const time    = new Date(t.timestamp).toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata" });
       const decided = t.decided ? "[✓]" : "[✗]";
       const symbol  = (t.symbol || "").replace(".NS", "");
       lines.push(`${time}  ${decided}  ${t.action}  ${symbol}`);
